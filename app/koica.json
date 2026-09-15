@@ -1,0 +1,154 @@
+{
+  "meta": {
+    "title": "KOICA Global Partnership Atlas",
+    "version": "6.0.0",
+    "updated": "2026-09-08",
+    "dataPolicy": "Null for unknown values. No fabricated data.",
+    "sources": [
+      "KOICA Official Website (koica.go.kr)",
+      "KOICA Brochure (2025)",
+      "KOICA Organization Introduction",
+      "OECD DAC Reports",
+      "UNESCAP KOICA Country Strategies (2025)",
+      "KOICA Annual Reports",
+      "News Reports (2026)"
+    ],
+    "historicalContext": {
+      "southKoreaJourney": {
+        "aidRecipientPeriod": "1953-1960",
+        "keyFact": "Foreign aid financed over 70% of South Korea's imports during this period",
+        "transformation": "From one of the world's poorest nations to a leading donor country",
+        "milestones": [
+          { "year": 1962, "event": "First Five-Year Economic Development Plan launched" },
+          { "year": 1982, "event": "Development Experience Exchange Program (DEEP) launched" },
+          { "year": 1987, "event": "Economic Development Cooperation Fund (EDCF) established" },
+          { "year": 1991, "event": "KOICA established on April 1" },
+          { "year": 2009, "event": "Joined OECD Development Assistance Committee (DAC)" }
+        ],
+        "coreMessage": "South Korea remembers being helped, and now helps others—sharing the knowledge and experience that lifted it from poverty"
+      }
+    }
+  },
+  "organization": {
+    "name": "KOICA",
+    "fullName": "Korea International Cooperation Agency",
+    "korean": "한국국제협력단",
+    "founded": "1991-04-01",
+    "headquarters": {
+      "name": "KOICA Headquarters",
+      "city": "Seongnam-si",
+      "country": "South Korea",
+      "latitude": 37.4386,
+      "longitude": 127.1378,
+      "address": "825 Daewangpangyo-ro, Sujeong-gu, Seongnam-si, Gyeonggi-do"
+    },
+    "type": "Grant-based ODA agency under Ministry of Foreign Affairs",
+    "president": "CHANG, Won Sam (14th President)",
+    "mission": "Contributing to the common prosperity of mankind and promotion of world peace through inclusive, mutual development cooperation that leaves no one behind.",
+    "vision": "An eminent global development cooperation organization that realizes global values and creates mutual prosperity.",
+    "values": [
+      { "id": "people", "name": "People", "icon": "👤", "meaning": "Put people first—especially the vulnerable" },
+      { "id": "peace", "name": "Peace", "icon": "🕊️", "meaning": "Work for peace in conflict-affected areas" },
+      { "id": "prosperity", "name": "Prosperity", "icon": "🌱", "meaning": "Help communities grow and thrive" },
+      { "id": "planet", "name": "Planet", "icon": "🌍", "meaning": "Protect the environment for future generations" },
+      { "id": "partnership", "name": "Partnership", "icon": "🤝", "meaning": "Work together with partners worldwide" }
+    ],
+    "budget": {
+      "history": [
+        { "year": 1991, "usd": "13.4M", "krw": "17.4B" },
+        { "year": 2022, "usd": "852M", "krw": "1.137T" },
+        { "year": 2024, "usd": "1.04B", "krw": "1.3T" },
+        { "year": 2026, "usd": "~790M", "krw": "1.1389T" }
+      ],
+      "2026": {
+        "krw": "1,138,900,000,000",
+        "usd": "~790,000,000",
+        "change": "-156.6B KRW (-12.1%) from 2025"
+      },
+      "context": "The 2026 budget reduction is part of a broader 15.5% cut to the Ministry of Foreign Affairs' budget, the first decrease in 20 years. The humanitarian assistance portion of the ODA budget was halved from 670.2 billion won to 335.5 billion won.",
+      "growth": "85× growth in 35 years ($13M → $1.15B at peak)",
+      "odaShare": {
+        "totalODA": "32%",
+        "grantODA": "64.7%"
+      }
+    },
+    "globalOffices": {
+      "total": 48,
+      "regions": {
+        "Africa": { "count": 16, "countries": ["DZ", "CM", "CI", "CD", "EG", "ET", "GH", "KE", "MA", "MZ", "NG", "RW", "SN", "TZ", "TN", "UG"] },
+        "Asia-Pacific": { "count": 15, "countries": ["AF", "BD", "KH", "FJ", "ID", "LA", "MN", "MM", "NP", "PK", "PH", "LK", "TH", "TL", "VN"] },
+        "Eurasia-Middle East": { "count": 8, "countries": ["AZ", "IQ", "JO", "KG", "PS", "TJ", "UA", "UZ"] },
+        "Latin America-Caribbean": { "count": 8, "countries": ["BO", "CO", "DO", "EC", "SV", "GT", "PY", "PE"] }
+      },
+      "representatives": ["IN", "OECD", "UN"]
+    },
+    "keyAchievements": [
+      { "year": 2022, "achievement": "Selected among top 3 bilateral donors in Aid Transparency Index" },
+      { "year": 2022, "achievement": "WHO Emergency Medical Team Type 1 Fixed classification earned by KDRT" },
+      { "year": 2023, "achievement": "Grand Prize winner of Korea's ESG Management Innovation Awards" },
+      { "year": 2026, "achievement": "First GCF project approved — Ethiopia Urban Climate Resilience ($47M)" }
+    ]
+  },
+  "partnerCountries": {
+    "coreCPS": {
+      "count": 27,
+      "description": "Highest priority countries with official Country Partnership Strategies (CPS). Over 70% of bilateral ODA budget allocated to these countries.",
+      "byRegion": {
+        "Asia": { "count": 12, "countries": ["BD", "KH", "IN", "ID", "LA", "MN", "MM", "NP", "PK", "PH", "LK", "VN"] },
+        "Africa": { "count": 7, "countries": ["EG", "ET", "GH", "RW", "SN", "TZ", "UG"] },
+        "Eurasia": { "count": 4, "countries": ["KG", "TJ", "UA", "UZ"] },
+        "Americas": { "count": 4, "countries": ["BO", "CO", "PY", "PE"] }
+      }
+    },
+    "withOffices": {
+      "count": 48,
+      "description": "Countries with physical KOICA overseas offices/branches.",
+      "byRegion": {
+        "Africa": ["DZ", "CM", "CI", "CD", "EG", "ET", "GH", "KE", "MA", "MZ", "NG", "RW", "SN", "TZ", "TN", "UG"],
+        "Asia-Pacific": ["AF", "BD", "KH", "FJ", "ID", "LA", "MN", "MM", "NP", "PK", "PH", "LK", "TH", "TL", "VN"],
+        "Eurasia-Middle East": ["AZ", "IQ", "JO", "KG", "PS", "TJ", "UA", "UZ"],
+        "Latin America-Caribbean": ["BO", "CO", "DO", "EC", "SV", "GT", "PY", "PE"]
+      }
+    },
+    "allCountries": {
+      "count": 70,
+      "list": ["AF", "AO", "AZ", "BD", "BF", "BN", "BO", "CD", "CI", "CM", "CO", "CU", "DO", "DZ", "EC", "EG", "ET", "FJ", "GH", "GT", "HN", "ID", "IN", "IQ", "JO", "KE", "KG", "KH", "KI", "LA", "LK", "MA", "MG", "MH", "MM", "MN", "MW", "MY", "MZ", "NG", "NI", "NP", "PA", "PE", "PG", "PH", "PK", "PS", "PY", "RW", "SB", "SN", "SV", "SY", "TD", "TG", "TH", "TJ", "TL", "TN", "TR", "TV", "TZ", "UA", "UG", "UY", "UZ", "VN", "VU", "ZA", "ZM"]
+    }
+  },
+  "countryDetails": {
+    "RW": { "name": "Rwanda", "emoji": "🇷🇼", "lat": -1.9403, "lng": 29.8739, "status": "Core CPS", "projects": [{ "title": "Agricultural Climate Resilience & Green Jobs", "period": "2026-2029", "budget": "$17.1M", "impact": "Climate resilience, green jobs" }] },
+    "NP": { "name": "Nepal", "emoji": "🇳🇵", "lat": 28.3949, "lng": 84.124, "status": "Core CPS", "projects": [{ "title": "Master's Program in Control of Infectious Disease", "period": "2017-2024", "budget": "$2M", "impact": "Alumni drafted national COVID-19 roadmap" }] },
+    "ET": { "name": "Ethiopia", "emoji": "🇪🇹", "lat": 9.145, "lng": 40.4897, "status": "Core CPS", "projects": [{ "title": "Building Urban Climate Resilience", "period": "2026-2030", "budget": "$47M", "impact": "First GCF project" }] },
+    "KH": { "name": "Cambodia", "emoji": "🇰🇭", "lat": 11.5564, "lng": 104.9282, "status": "Core CPS", "projects": [{ "title": "IT-based Job Incubation Center", "period": "2019-2024", "budget": "$7.91M", "impact": "Startup hub" }] },
+    "VN": { "name": "Vietnam", "emoji": "🇻🇳", "lat": 21.0285, "lng": 105.8542, "status": "Core CPS", "projects": [{ "title": "V-KIST", "period": "2014-2023", "budget": "$35M", "impact": "World-class research institute" }] },
+    "KG": { "name": "Kyrgyzstan", "emoji": "🇰🇬", "lat": 41.2044, "lng": 74.7661, "status": "Core CPS", "projects": [{ "title": "Firefighting Capacity", "period": "2019-2022", "budget": "$7M", "impact": "Faster response" }] },
+    "BD": { "name": "Bangladesh", "emoji": "🇧🇩", "lat": 23.7, "lng": 90.4, "status": "Core CPS", "projects": [] },
+    "GH": { "name": "Ghana", "emoji": "🇬🇭", "lat": 7.9, "lng": -1.0, "status": "Core CPS", "projects": [] },
+    "EG": { "name": "Egypt", "emoji": "🇪🇬", "lat": 26.8, "lng": 30.8, "status": "Core CPS", "projects": [] },
+    "SN": { "name": "Senegal", "emoji": "🇸🇳", "lat": 14.5, "lng": -14.5, "status": "Core CPS", "projects": [] },
+    "UG": { "name": "Uganda", "emoji": "🇺🇬", "lat": 1.4, "lng": 32.3, "status": "Core CPS", "projects": [] },
+    "UZ": { "name": "Uzbekistan", "emoji": "🇺🇿", "lat": 41.4, "lng": 64.6, "status": "Core CPS", "projects": [] },
+    "UA": { "name": "Ukraine", "emoji": "🇺🇦", "lat": 48.4, "lng": 31.2, "status": "Core CPS", "projects": [] },
+    "CO": { "name": "Colombia", "emoji": "🇨🇴", "lat": 4.6, "lng": -74.1, "status": "Core CPS", "projects": [] },
+    "PE": { "name": "Peru", "emoji": "🇵🇪", "lat": -9.2, "lng": -75.0, "status": "Core CPS", "projects": [] },
+    "BO": { "name": "Bolivia", "emoji": "🇧🇴", "lat": -16.3, "lng": -64.6, "status": "Core CPS", "projects": [] },
+    "PY": { "name": "Paraguay", "emoji": "🇵🇾", "lat": -23.4, "lng": -58.4, "status": "Core CPS", "projects": [] },
+    "TZ": { "name": "Tanzania", "emoji": "🇹🇿", "lat": -6.4, "lng": 34.9, "status": "Core CPS", "projects": [] },
+    "IN": { "name": "India", "emoji": "🇮🇳", "lat": 20.6, "lng": 78.9, "status": "Core CPS", "projects": [] },
+    "ID": { "name": "Indonesia", "emoji": "🇮🇩", "lat": -2.5, "lng": 118.0, "status": "Core CPS", "projects": [] },
+    "PH": { "name": "Philippines", "emoji": "🇵🇭", "lat": 12.9, "lng": 121.8, "status": "Core CPS", "projects": [] },
+    "PK": { "name": "Pakistan", "emoji": "🇵🇰", "lat": 30.4, "lng": 69.3, "status": "Core CPS", "projects": [] },
+    "MN": { "name": "Mongolia", "emoji": "🇲🇳", "lat": 46.8, "lng": 103.8, "status": "Core CPS", "projects": [] },
+    "MM": { "name": "Myanmar", "emoji": "🇲🇲", "lat": 21.9, "lng": 96.0, "status": "Core CPS", "projects": [] },
+    "LA": { "name": "Lao PDR", "emoji": "🇱🇦", "lat": 19.9, "lng": 102.5, "status": "Core CPS", "projects": [] },
+    "LK": { "name": "Sri Lanka", "emoji": "🇱🇰", "lat": 7.9, "lng": 80.8, "status": "Core CPS", "projects": [] },
+    "TL": { "name": "Timor-Leste", "emoji": "🇹🇱", "lat": -8.6, "lng": 125.7, "status": "Core CPS", "projects": [] }
+  },
+  "accreditations": {
+    "gcf": {
+      "status": "Accredited Entity of Green Climate Fund (GCF)",
+      "accreditationDate": "November 2022",
+      "firstProject": { "country": "Ethiopia", "budget": "$47M", "focus": "Urban climate resilience", "projectId": "FP289" }
+    }
+  }
+}
