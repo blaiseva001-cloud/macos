@@ -1,19 +1,23 @@
 // @ts-nocheck
 "use client";
-/* ═══════════════════════════════════════════════════════════════════════════
-   WeKO@KOICA — INFINITE PREMIUM · DRAGGABLE EVERYTHING EDITION v16.0
-   ─ iWatch shell REMOVED · iPhone shell premium with drag-reorder
-   ─ Desktop widgets: draggable + persistent (localStorage)
-   ─ Desktop icons: draggable + persistent
-   ─ Windows drag · Dock magnify · Right-click context · Terminal · PDF viewer
-═══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════════════
+   WeKO@KOICA — INFINITE PREMIUM EDITION · WIDGETS + PDF VIEWER BUILD
+   ─ KOICA Hub icon: /koicahub.webp (Dock · Registry · Spotlight · iOS · Watch)
+   ─ Desktop essentials: Clock+WorldClocks · Weather system (rain/thunder/snow/
+     night sky) · System monitor (sparklines+storage ring) · Folder+Video stacks ·
+     Hub ticker · mini Calendar — pins REMOVED
+   ─ Finder: SINGLE-CLICK opens folders/files · folderog.webp folders · macOS docs
+   ─ PDFs: /koica.pdf + /koica_brochure.pdf open in-app native PDF viewer
+   ─ Wallpapers: 6 photos + 8 animated macOS gradients
+   Stack: Next.js App Router · TS · Tailwind · framer-motion · lucide-react
+═══════════════════════════════════════════════════════════════════════════════ */
 import React, {
   useState, useEffect, useRef, useCallback, useMemo, createContext, useContext,
 } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, Reorder } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import * as L from "lucide-react";
 
-/* ── 0. GLOBAL CSS ───────────────────────────────────────────────────────── */
+/* ── 0. GLOBAL CSS ───────────────────────────────────────────────────────────── */
 const GLOBAL_CSS = `
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap");
 :root{--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
@@ -27,7 +31,6 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,"SF Pro Text",system-u
 .jb,.jb *,input,textarea,.selectable,.selectable *{user-select:text!important;-webkit-user-select:text!important}
 .chrome,.chrome *,button,button *{user-select:none!important;-webkit-user-select:none!important}
 .glass{background:rgba(30,30,35,.65);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);border:1px solid rgba(255,255,255,.08)}
-.glass-strong{background:rgba(20,20,26,.72);backdrop-filter:blur(50px) saturate(200%);-webkit-backdrop-filter:blur(50px) saturate(200%);border:1px solid rgba(255,255,255,.12);box-shadow:0 20px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.10)}
 .traffic{width:12px;height:12px;border-radius:9999px;display:grid;place-items:center;border:none;cursor:pointer;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.15);transition:all .15s ease}
 .traffic:hover{filter:brightness(1.1)}
 .traffic span{opacity:0;font-size:9px;line-height:1;font-weight:800;color:rgba(0,0,0,.6);transition:opacity .15s}
@@ -64,27 +67,17 @@ input[type="range"].mac::-webkit-slider-thumb{-webkit-appearance:none;width:16px
 .grad-animate{background-size:180% 180%;animation:gradShift 14s ease infinite}
 @keyframes glowpulse{0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,.35)}50%{box-shadow:0 0 0 10px rgba(56,189,248,0)}}
 .glowpulse{animation:glowpulse 2.4s ease-out infinite}
-@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-.floaty{animation:floaty 5s ease-in-out infinite}
 .grid-pattern{background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:20px 20px}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:220px;height:32px;background:#000;border-bottom-left-radius:16px;border-bottom-right-radius:16px;z-index:9999;display:flex;align-items:center;justify-content:center;gap:8px}
 .win-shadow{box-shadow:0 20px 50px -10px rgba(0,0,0,.5),0 10px 20px -5px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.05)}
 .win-shadow-focused{box-shadow:0 30px 80px -10px rgba(0,0,0,.7),0 15px 30px -5px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.1)}
 .term-scroll::-webkit-scrollbar{width:6px}
 .term-scroll::-webkit-scrollbar-thumb{background:rgba(148,163,184,.25);border-radius:3px}
 .widget-scroll::-webkit-scrollbar{width:0}
 .doc-gloss{background:linear-gradient(135deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.08) 42%,rgba(255,255,255,0) 60%)}
-.drag-handle{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:6px;display:grid;place-items:center;opacity:0;transition:opacity .18s ease;background:rgba(255,255,255,.14);backdrop-filter:blur(10px);cursor:grab;z-index:5}
-.drag-handle:active{cursor:grabbing}
-.drag-host:hover .drag-handle{opacity:1}
-.drag-host.is-dragging .drag-handle{opacity:1;background:rgba(56,189,248,.5)}
-.drag-host.is-dragging{cursor:grabbing}
-.widget-shadow{box-shadow:0 16px 40px -8px rgba(0,0,0,.55),0 6px 14px -4px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.06)}
-.ios-jiggle{animation:iosJiggle .28s ease-in-out infinite}
-@keyframes iosJiggle{0%,100%{transform:rotate(-1.6deg) scale(.98)}50%{transform:rotate(1.6deg) scale(1.02)}}
-.ios-dock{background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.12));backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);border:1px solid rgba(255,255,255,.22)}
 `;
 
-/* ── 1. UTILS / SPRINGS / TYPES ──────────────────────────────────────────── */
+/* ── 1. UTILS / SPRINGS / TYPES ──────────────────────────────────────────────── */
 const cx = (...c: any[]) => c.filter(Boolean).join(" ");
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
@@ -93,7 +86,6 @@ const MENU_H = 32;
 const SPRING = { type: "spring" as const, stiffness: 320, damping: 28, mass: 0.9 };
 const SPRING_SOFT = { type: "spring" as const, stiffness: 180, damping: 22, mass: 1.0 };
 const SPRING_POP = { type: "spring" as const, stiffness: 520, damping: 22, mass: 0.7 };
-const SNAP = { type: "spring" as const, stiffness: 900, damping: 28, mass: 0.45 };
 const ELASTIC_ICON = { type: "spring" as const, stiffness: 640, damping: 18, mass: 0.6 };
 
 type AppId =
@@ -125,7 +117,7 @@ interface OSApi {
 const OS = createContext<OSApi>(null as any);
 const useOS = () => useContext(OS);
 
-/* ── 2. WALLPAPERS — 6 photos + 8 animated gradients ─────────────────────── */
+/* ── 2. WALLPAPERS — 6 photos + 8 animated gradients ─────────────────────────── */
 const WALLPAPERS: { name: string; img?: string; css: string }[] = [
   { name: "Sequoia Field", img: "/wallpaper01.webp", css: "linear-gradient(180deg,rgba(4,10,10,.18),rgba(3,8,10,.55))" },
   { name: "Sonoma Night", img: "/wallpaper02.webp", css: "linear-gradient(180deg,rgba(10,8,24,.15),rgba(6,5,16,.55))" },
@@ -143,7 +135,7 @@ const WALLPAPERS: { name: string; img?: string; css: string }[] = [
   { name: "High Sierra", css: "radial-gradient(90% 60% at 20% 0%, rgba(52,211,153,.32), transparent 60%), radial-gradient(80% 60% at 90% 90%, rgba(13,148,136,.35), transparent 60%), linear-gradient(165deg,#071510 0%,#0c241b 50%,#06110c 100%)" },
 ];
 
-/* ── 3. COUNTRY REGISTRY ────────────────────────────────────────────────── */
+/* ── 3. COUNTRY REGISTRY ─────────────────────────────────────────────────────── */
 interface Country {
   name: string; topo?: string[]; region: string; city: string;
   office: boolean; core: boolean; lat: number; lng: number; sectors: string[];
@@ -259,7 +251,7 @@ const resolveCountryArg = (args: string[]) => {
   return REG.find((c) => c.name.toLowerCase() === q) || REG.find((c) => c.name.toLowerCase().startsWith(q));
 };
 
-/* ── 4. KOICA DB + HISTORY ───────────────────────────────────────────────── */
+/* ── 4. KOICA DB + HISTORY ───────────────────────────────────────────────────── */
 const KOICA = {
   full: "Korea International Cooperation Agency", kr: "한국국제협력단",
   president: "CHANG, Won Sam (14th President)",
@@ -292,7 +284,7 @@ const HISTORY: { year: number; era: string; text: string; icon: any; hl?: boolea
   { year: 2026, era: "Future", text: "Support budget ₩1.5322 trillion — 28.2% of Korea's ODA.", icon: L.TrendingUp, hl: true },
 ];
 
-/* ── 5. GEOGRAPHY ────────────────────────────────────────────────────────── */
+/* ── 5. GEOGRAPHY ────────────────────────────────────────────────────────────── */
 const NE_PROJ = (lon: number, lat: number): [number, number] => {
   const l = (lat * Math.PI) / 180, lam = (lon * Math.PI) / 180;
   const l2 = l * l, l4 = l2 * l2, l6 = l4 * l2, l8 = l4 * l4, l10 = l8 * l2, l12 = l10 * l2;
@@ -357,7 +349,7 @@ function buildPaths(feats: any[]) {
   return { list, P };
 }
 
-/* ── 6. VIRTUAL FILESYSTEM ───────────────────────────────────────────────── */
+/* ── 6. VIRTUAL FILESYSTEM (incl. real public PDFs) ──────────────────────────── */
 interface FSItem { name: string; kind: "folder" | "file"; ext?: string; size?: string; bytes?: number; mtime?: number; content?: string }
 const PUBLIC_PDFS = new Set(["koica.pdf", "koica_brochure.pdf"]);
 const FS: Record<string, FSItem[]> = {
@@ -489,7 +481,7 @@ const splitRedirect = (text: string): { text: string; redirect?: { file: string;
 };
 const expandEnv = (s: string, env: Record<string, string>) => s.replace(/\$([A-Za-z_][A-Za-z0-9_]*)/g, (_, n) => env[n] ?? "");
 
-/* ── 7. ICONOGRAPHY ──────────────────────────────────────────────────────── */
+/* ── 7. ICONOGRAPHY — folderog.webp + macOS doc icons ────────────────────────── */
 function FolderIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
   return <img src="/folderog.webp" alt="" draggable={false} className={cx("object-contain select-none drop-shadow-[0_3px_6px_rgba(0,0,0,.35)]", className)} style={{ width: size, height: size }} />;
 }
@@ -536,10 +528,10 @@ function DocIcon({ ext, size = 48 }: { ext?: string; size?: number }) {
 }
 const ItemIcon = ({ item, size = 48 }: { item: FSItem; size?: number }) => item.kind === "folder" ? <FolderIcon size={size} /> : <DocIcon ext={item.ext} size={size} />;
 
-/* ── 8. BOOT / LOCK ──────────────────────────────────────────────────────── */
+/* ── 8. BOOT / LOCK ──────────────────────────────────────────────────────────── */
 function BootScreen({ onDone }: { onDone: () => void }) {
   const [p, setP] = useState(0); const [logs, setLogs] = useState<string[]>([]);
-  const bootLogs = ["Initializing kernel... Darwin 24.0.0", "Loading KOICA Infinite Premium shell...", "Mounting virtual filesystem... OK", "Decoding Natural Earth geography... OK", "Loading country registry... OK", "Verifying 49 overseas offices... OK", "Uplink to Seongnam HQ... ₩1.5322T synced", "Enabling draggable widgets · icons · windows", "PDF viewer + iPhone shell armed", "System ready. Welcome, Detective."];
+  const bootLogs = ["Initializing kernel... Darwin 24.0.0", "Loading KOICA Infinite Premium shell...", "Mounting virtual filesystem... OK", "Decoding Natural Earth geography... OK", "Loading country registry... OK", "Verifying 49 overseas offices... OK", "Uplink to Seongnam HQ... ₩1.5322T synced", "PDF viewer + widget engine armed", "System ready. Welcome, Detective."];
   useEffect(() => {
     let i = 0;
     const li = setInterval(() => { if (i < bootLogs.length) { setLogs((s) => [...s, bootLogs[i]]); i++; } }, 190);
@@ -551,7 +543,7 @@ function BootScreen({ onDone }: { onDone: () => void }) {
       <motion.img src="/appleicon.webp" alt="" draggable={false} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={SPRING_SOFT} className="mb-8 h-24 w-24 object-contain drop-shadow-[0_0_45px_rgba(255,255,255,.3)]" />
       <div className="h-[4px] w-64 overflow-hidden rounded-full bg-zinc-800 mb-8"><motion.div className="h-full rounded-full bg-white" animate={{ width: `${Math.min(100, p)}%` }} /></div>
       <div className="w-full max-w-md space-y-0.5 px-4">{logs.map((l, i) => <motion.p key={i} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="jb text-center text-[10px] text-zinc-500">{l}</motion.p>)}</div>
-      <p className="jb absolute bottom-8 text-[10px] tracking-widest text-zinc-700">KOICA INFINITE PREMIUM v16 · DRAGGABLE EVERYTHING · SECURE BOOT</p>
+      <p className="jb absolute bottom-8 text-[10px] tracking-widest text-zinc-700">KOICA INFINITE PREMIUM · WEKO BUILD ∞ · SECURE BOOT</p>
     </motion.div>
   );
 }
@@ -574,7 +566,7 @@ function LockScreen({ unlock }: { unlock: () => void }) {
   );
 }
 
-/* ── 9. SHELL CORE ───────────────────────────────────────────────────────── */
+/* ── 9. SHELL CORE ───────────────────────────────────────────────────────────── */
 const HOME_DISPLAY = "/Users/weko";
 const SHELL_USER = "weko";
 const cloneFS = (src: Record<string, FSItem[]>) => { const o: Record<string, FSItem[]> = {}; for (const k of Object.keys(src)) o[k] = src[k].map((i) => ({ ...i })); return o; };
@@ -591,16 +583,16 @@ const MANPAGES: Record<string, string> = {
   map: "NAME\n  map — interactive world map\nSYNOPSIS\n  map",
 };
 
-/* ── 10. BREAKPOINTS (iWatch REMOVED) ────────────────────────────────────── */
-type Bp = "mobile" | "tablet" | "desktop" | "wide";
+/* ── 10. BREAKPOINTS ─────────────────────────────────────────────────────────── */
+type Bp = "watch" | "mobile" | "tablet" | "desktop" | "wide";
 function useBreakpoint(): { bp: Bp; w: number; h: number } {
   const [s, setS] = useState<{ bp: Bp; w: number; h: number }>(() => ({ bp: "desktop", w: 1440, h: 900 }));
   useEffect(() => {
     const calc = () => {
-      const w = window.innerWidth, h = window.innerHeight;
-      let bp: Bp = "desktop";
-      if (w < 640) bp = "mobile";          // iPhone shell
-      else if (w < 1024) bp = "tablet";    // desktop-lite
+      const w = window.innerWidth, h = window.innerHeight; let bp: Bp = "desktop";
+      if (w < 340 || (w < 420 && h / w > 1.4)) bp = "watch";
+      else if (w < 640) bp = "mobile";
+      else if (w < 1024) bp = "tablet";
       else if (w >= 1920) bp = "wide";
       setS({ bp, w, h });
     };
@@ -611,7 +603,7 @@ function useBreakpoint(): { bp: Bp; w: number; h: number } {
   return s;
 }
 
-/* ── 11. MENU BAR / CONTROL CENTER ───────────────────────────────────────── */
+/* ── 11. MENU BAR / CONTROL CENTER ───────────────────────────────────────────── */
 function useClock() { const [n, setN] = useState(new Date()); useEffect(() => { const t = setInterval(() => setN(new Date()), 10000); return () => clearInterval(t); }, []); return n; }
 function MenuList({ items, onClose }: { items: any[]; onClose: () => void }) {
   return (
@@ -691,7 +683,7 @@ function MenuBar({ openSpotlight, openApp }: { openSpotlight: () => void; openAp
   </>);
 }
 
-/* ── 12. NOTIFICATIONS / SPOTLIGHT ───────────────────────────────────────── */
+/* ── 12. NOTIFICATIONS / SPOTLIGHT ───────────────────────────────────────────── */
 function Notifications({ notices }: { notices: any[] }) {
   return (
     <div className="pointer-events-none fixed right-3 top-10 z-[950] flex w-[88vw] sm:w-80 max-w-sm flex-col gap-2">
@@ -752,7 +744,7 @@ function Spotlight({ onClose }: { onClose: () => void }) {
   );
 }
 
-/* ── 13. WINDOW FRAME / DOCK / MISSION CONTROL ──────────────────────────── */
+/* ── 13. WINDOW FRAME / DOCK / MISSION CONTROL ───────────────────────────────── */
 function WindowFrame({ win }: { win: Win }) {
   const os = useOS(); const focused = os.focusedId === win.id; const ref = useRef<HTMLDivElement>(null);
   const View = APPS[win.app].view;
@@ -858,7 +850,7 @@ function MissionControl() {
   );
 }
 
-/* ── 14. TERMINAL MAPS ───────────────────────────────────────────────────── */
+/* ── 14. TERMINAL MAPS ───────────────────────────────────────────────────────── */
 function TermWorldMap({ onOpen, inputRef }: { onOpen: (n: string) => void; inputRef: React.RefObject<HTMLInputElement> }) {
   const [geo, setGeo] = useState<any>(null); const [err, setErr] = useState(false);
   const [sel, setSel] = useState(0); const [hover, setHover] = useState<any>(null);
@@ -934,7 +926,7 @@ function TermCountryMap({ c }: { c: Country }) {
   );
 }
 
-/* ── 15. TERMINAL PRIMITIVES ─────────────────────────────────────────────── */
+/* ── 15. TERMINAL PRIMITIVES ─────────────────────────────────────────────────── */
 type TOut = { k: "t"; s: string; c?: string } | { k: "jsx"; node: React.ReactNode } | { k: "bar"; label: string; c?: string; s?: string } | { k: "rule" } | { k: "next"; cmds: string[] };
 const RULE = "────────────────────────────────────────────────────────";
 function BarLine({ label, pct, color }: { label: string; pct: number; color?: string }) {
@@ -951,7 +943,7 @@ function OutLine({ o, onCmd }: { o: TOut; onCmd: (c: string) => void }) {
   return <p className={cx("jb whitespace-pre-wrap text-[12px] leading-[1.5]", o.c ?? "text-zinc-200")}>{o.s}</p>;
 }
 
-/* ── 16. TERMINAL APP ────────────────────────────────────────────────────── */
+/* ── 16. TERMINAL APP ────────────────────────────────────────────────────────── */
 function TerminalApp({ initialCmd, winId }: { initialCmd?: string; winId: number }) {
   const os = useOS();
   const [lines, setLines] = useState<TOut[]>([]); const [val, setVal] = useState(""); const [cwd, setCwd] = useState("~"); const [histIdx, setHistIdx] = useState(-1);
@@ -1033,7 +1025,7 @@ function TerminalApp({ initialCmd, winId }: { initialCmd?: string; winId: number
       print({ k: "rule" }); printT("READY FOR INVESTIGATION", "text-zinc-100");
       next(["map", "countries", "country Rwanda", "org", "history"]);
     },
-    about: async () => { head("WEKO INFINITE INVESTIGATION CONSOLE"); printT("A command-line exploration of KOICA's", "text-zinc-300"); printT("global development cooperation.", "text-zinc-300"); kv("VERSION", "∞ v16 (Draggable Everything)", "text-cyan-300"); kv("GEOGRAPHY", "NATURAL EARTH 110m", "text-sky-300"); next(["status", "map"]); },
+    about: async () => { head("WEKO INFINITE INVESTIGATION CONSOLE"); printT("A command-line exploration of KOICA's", "text-zinc-300"); printT("global development cooperation.", "text-zinc-300"); kv("VERSION", "∞ (Infinite Premium)", "text-cyan-300"); kv("GEOGRAPHY", "NATURAL EARTH 110m", "text-sky-300"); next(["status", "map"]); },
     map: async () => { await aSpin("Loading geographic registry"); head("KOICA GLOBAL PRESENCE"); print({ k: "jsx", node: <TermWorldMap inputRef={inpRef} onOpen={(n) => runRef.current(`country ${n}`)} /> }); next(["countries", "offices", "country Rwanda"]); },
     countries: async () => {
       await aDots("reading partner registry"); head("KOICA PARTNER COUNTRIES");
@@ -1151,7 +1143,7 @@ function TerminalApp({ initialCmd, winId }: { initialCmd?: string; winId: number
   );
 }
 
-/* ── 17. FINDER ──────────────────────────────────────────────────────────── */
+/* ── 17. FINDER — SINGLE-CLICK · folderog sidebar · doc icons ────────────────── */
 function FinderApp({ path: initialPath }: { path?: string }) {
   const os = useOS();
   const [path, setPath] = useState(initialPath && FS[initialPath] ? initialPath : "~/Documents");
@@ -1237,7 +1229,7 @@ function FinderApp({ path: initialPath }: { path?: string }) {
   );
 }
 
-/* ── 18. PDF VIEWER ──────────────────────────────────────────────────────── */
+/* ── 18. PDF VIEWER APP ──────────────────────────────────────────────────────── */
 function PdfApp({ src, title }: { src: string; title: string }) {
   const os = useOS();
   const name = (src ?? "/koica.pdf").split("/").pop() ?? "koica.pdf";
@@ -1273,7 +1265,7 @@ function PdfApp({ src, title }: { src: string; title: string }) {
   );
 }
 
-/* ── 19. QUICK LOOK ──────────────────────────────────────────────────────── */
+/* ── 19. QUICK LOOK ──────────────────────────────────────────────────────────── */
 function QuickLookApp({ item, dir }: { item: FSItem; dir: string }) {
   const os = useOS();
   const E = item.ext?.toUpperCase();
@@ -1306,7 +1298,7 @@ function QuickLookApp({ item, dir }: { item: FSItem; dir: string }) {
   );
 }
 
-/* ── 20. PHOTOS / MEDIA ──────────────────────────────────────────────────── */
+/* ── 20. PHOTOS / MEDIA ──────────────────────────────────────────────────────── */
 function PhotosApp() {
   const os = useOS();
   const shots = ["/koica.webp", "/koica1.webp", "/koica2.webp", "/koica3.webp", "/koica4.webp", "/koica5.webp", "/koica6.webp"];
@@ -1353,7 +1345,7 @@ function MediaApp() {
   );
 }
 
-/* ── 21. ATLAS / SAFARI / MESSAGES / CODE / SETTINGS / UTILS ─────────────── */
+/* ── 21. ATLAS / SAFARI / MESSAGES / CODE / SETTINGS / UTILS ─────────────────── */
 function AtlasApp() {
   const [geo, setGeo] = useState<any>(null); const [hover, setHover] = useState<any>(null); const [sel, setSel] = useState<Country | null>(null);
   useEffect(() => { loadWorld().then((f) => f && setGeo(buildPaths(f))); }, []);
@@ -1436,7 +1428,7 @@ function SafariApp() {
   );
 }
 function MessagesApp() {
-  const [msgs, setMsgs] = useState<{ me: boolean; t: string }[]>([{ me: false, t: "WeKO? Infinite v16 is live. Everything drags now." }]);
+  const [msgs, setMsgs] = useState<{ me: boolean; t: string }[]>([{ me: false, t: "WeKO? Infinite build is live. Try: open koica.pdf" }]);
   const [v, setV] = useState(""); const ix = useRef(0);
   const R = ["Cross-check complete. 4 sources agree.", "₩1.5322T — that's 88× the 1991 budget.", "27,000+ WFK volunteers since 1990.", "Run: impact Rwanda — the trace is beautiful.", "Leaving no one behind. Always."];
   const send = () => { if (!v.trim()) return; setMsgs((m) => [...m, { me: true, t: v }]); const r = R[ix.current++ % R.length]; setV(""); setTimeout(() => setMsgs((m) => [...m, { me: false, t: r }]), 800); };
@@ -1484,15 +1476,13 @@ function SettingsApp() {
             <p className="text-[14px] font-bold text-zinc-100">About</p>
             <div className="mt-2 grid grid-cols-[110px_1fr] gap-y-1 text-[12px] text-zinc-400">
               <span>Chip</span><span className="text-zinc-200">Apple M4 Max</span>
-              <span>Version</span><span className="text-zinc-200">KOICA Sequoia 15.2 (WEKO-∞ v16)</span>
+              <span>Version</span><span className="text-zinc-200">KOICA Sequoia 15.2 (WEKO-∞)</span>
               <span>Geography</span><span className="text-zinc-200">Natural Earth 110m (local)</span>
               <span>Icons</span><span className="text-zinc-200">folderog.webp + koicahub.webp</span>
               <span>PDF engine</span><span className="text-zinc-200">native viewer (koica.pdf)</span>
-              <span>Drag</span><span className="text-zinc-200">widgets · icons · windows</span>
             </div>
           </motion.div>
           <motion.button whileTap={{ scale: 0.98 }} onClick={() => os.setDark(!os.dark)} className="flex w-full items-center justify-between rounded-xl bg-white/5 p-4 text-[13px] text-zinc-200 hover:bg-white/10 chrome">Dark Mode <span className="font-bold">{os.dark ? "On" : "Off"}</span></motion.button>
-          <motion.button whileTap={{ scale: 0.98 }} onClick={() => { try { localStorage.removeItem("weko.widgets"); localStorage.removeItem("weko.icons"); } catch {} os.notify("Layout", "Widget & icon positions reset"); }} className="flex w-full items-center justify-between rounded-xl bg-white/5 p-4 text-[13px] text-zinc-200 hover:bg-white/10 chrome">Reset Layout <span className="font-bold">Clear</span></motion.button>
         </div>)}
         {sec === "Wallpaper" && (
           <div className="grid max-w-2xl grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
@@ -1579,8 +1569,7 @@ function CalendarApp() {
 function NotesApp() {
   const [notes, setNotes] = useState([
     { id: 1, title: "WEKO-08", body: "Rwanda SAPMP: 80% wetland produce reaches market. 43,000 teachers ICT-trained." },
-    { id: 2, title: "KOICA facts", body: "₩1.5322T budget 2026 · 28.2% of Korea ODA · 61% grant share · 48 countries · 49 offices · 27,000+ volunteers · GCF accredited · INSARAG Heavy KDRT." },
-    { id: 3, title: "Drag me", body: "Widgets, icons, and windows are all draggable now. Positions persist via localStorage." }]);
+    { id: 2, title: "KOICA facts", body: "₩1.5322T budget 2026 · 28.2% of Korea ODA · 61% grant share · 48 countries · 49 offices · 27,000+ volunteers · GCF accredited · INSARAG Heavy KDRT." }]);
   const [sel, setSel] = useState(1); const a = notes.find((n) => n.id === sel);
   return (
     <div className="flex h-full bg-zinc-950">
@@ -1595,21 +1584,11 @@ function NotesApp() {
     </div>);
 }
 
-/* ── 22. HUB / TIMELINE / PROGRAMS / STORY / ABOUT / TRASH ───────────────── */
+/* ── 22. HUB / TIMELINE / PROGRAMS / STORY / ABOUT / TRASH ───────────────────── */
 function HubApp() {
   const [tab, setTab] = useState<"overview" | "sectors" | "regions" | "goals">("overview");
   const donutColors = ["#38bdf8", "#a78bfa", "#fb7185", "#fbbf24", "#34d399", "#f472b6", "#94a3b8"];
-  const total = KOICA.sectors.reduce((s, d) => s + d[1], 0);
-  // FIX: precompute offsets with reduce to satisfy react-hooks/immutability
-  const segs = useMemo(() => {
-    let acc = 0;
-    const r = 42, C = 2 * Math.PI * r;
-    return KOICA.sectors.map((d) => {
-      const frac = d[1] / total; const dash = frac * C; const off = -acc * C; acc += frac;
-      return { dash, off, C, r, name: d[0], pct: d[1] };
-    });
-  }, [total]);
-  const C = segs[0]?.C ?? 1, r = segs[0]?.r ?? 1;
+  const total = KOICA.sectors.reduce((s, d) => s + d[1], 0); let acc = 0; const r = 42, C = 2 * Math.PI * r;
   return (
     <div className="h-full overflow-y-auto bg-[#07080c] text-white">
       <div className="sticky top-0 z-20 glass border-b border-white/5 px-4 py-3 flex items-center justify-between chrome">
@@ -1654,9 +1633,8 @@ function HubApp() {
           <div className="rounded-2xl bg-white/5 border border-white/10 p-5 flex flex-col items-center justify-center">
             <div className="relative" style={{ width: 180, height: 180 }}>
               <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                {segs.map((s, i) => (
-                  <circle key={i} cx={50} cy={50} r={r} fill="none" stroke={donutColors[i % donutColors.length]} strokeWidth="12" strokeDasharray={`${s.dash} ${C - s.dash}`} strokeDashoffset={s.off} />
-                ))}
+                {KOICA.sectors.map((d, i) => { const frac = d[1] / total; const dash = frac * C; const off = -acc * C; acc += frac;
+                  return <circle key={i} cx={50} cy={50} r={r} fill="none" stroke={donutColors[i % donutColors.length]} strokeWidth="12" strokeDasharray={`${dash} ${C - dash}`} strokeDashoffset={off} />; })}
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-xl font-black">7</span><span className="text-[9px] text-zinc-400 uppercase tracking-wider">sectors</span></div>
             </div>
@@ -1754,13 +1732,12 @@ function AboutApp() {
     <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
       <motion.img src="/koicahub.webp" alt="" draggable={false} initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={ELASTIC_ICON} className="h-16 sm:h-20 w-16 sm:w-20 object-contain rounded-2xl drop-shadow-2xl" />
       <p className="text-lg sm:text-xl font-black text-zinc-100">KOICA Sequoia</p>
-      <p className="text-[11px] sm:text-[12px] text-zinc-500">Version 15.2 (WEKO-∞ v16 Draggable Everything)</p>
+      <p className="text-[11px] sm:text-[12px] text-zinc-500">Version 15.2 (WEKO-∞ Infinite Edition)</p>
       <div className="mt-2 grid grid-cols-[110px_1fr] gap-y-1 text-[11px] sm:text-[12px] text-zinc-500 selectable">
         <span>Chip</span><span className="text-zinc-200">Apple M4 Max</span>
         <span>Geography</span><span className="text-zinc-200">Natural Earth 110m</span>
         <span>Icons</span><span className="text-zinc-200">folderog + koicahub webp</span>
         <span>PDFs</span><span className="text-zinc-200">koica.pdf · koica_brochure.pdf</span>
-        <span>Drag</span><span className="text-zinc-200">everything · anywhere</span>
       </div>
       <p className="mt-4 max-w-xs text-[11px] text-zinc-600">Interactive concept piece. Data compiled from publicly available KOICA documents. Not affiliated with KOICA.</p>
     </div>);
@@ -1778,11 +1755,10 @@ function TrashApp() {
         <div className="grid flex-1 grid-cols-[repeat(auto-fill,minmax(90px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-3 sm:gap-4 p-4">
           {items.map((i) => (<motion.div key={i.name} layout initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center gap-1 chrome"><DocIcon ext={i.ext} size={48} /><p className="text-[12px] text-zinc-300 text-center">{i.name}</p></motion.div>))}
         </div>}
-    </div>
-  );
+    </div>);
 }
 
-/* ── 23. APP REGISTRY ────────────────────────────────────────────────────── */
+/* ── 23. APP REGISTRY — hub uses koicahub.webp ───────────────────────────────── */
 const AppImg = ({ src }: { src: string }) => <img src={src} alt="" draggable={false} className="h-full w-full object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,.55)]" />;
 const Squircle = ({ grad, children }: { grad: string; children: React.ReactNode }) => <div className={cx("grid h-full w-full place-items-center rounded-[24%] bg-gradient-to-b shadow-lg ring-1 ring-white/20", grad)}>{children}</div>;
 const APPS: Record<AppId, { name: string; w: number; h: number; Icon: () => React.ReactNode; view: React.FC<any> }> = {
@@ -1810,20 +1786,20 @@ const APPS: Record<AppId, { name: string; w: number; h: number; Icon: () => Reac
   notes: { name: "Notes", w: 700, h: 560, view: NotesApp, Icon: () => <Squircle grad="from-yellow-200 to-yellow-400"><L.StickyNote className="size-[50%] text-yellow-800" /></Squircle> },
 };
 
-/* ── 24. DRAGGABLE WIDGETS ───────────────────────────────────────────────── */
+/* ── 24. DESKTOP WIDGETS — clock · weather · system · stacks · hub · calendar ── */
 function Tilt({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const rx = useMotionValue(0); const ry = useMotionValue(0);
   const srx = useSpring(rx, { stiffness: 220, damping: 22 }); const sry = useSpring(ry, { stiffness: 220, damping: 22 });
   const onMove = (e: React.MouseEvent) => {
     const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    ry.set(((e.clientX - r.left) / r.width - 0.5) * 6);
-    rx.set(-((e.clientY - r.top) / r.height - 0.5) * 6);
+    ry.set(((e.clientX - r.left) / r.width - 0.5) * 7);
+    rx.set(-((e.clientY - r.top) / r.height - 0.5) * 7);
   };
   const onLeave = () => { rx.set(0); ry.set(0); };
   return (
     <motion.div onMouseMove={onMove} onMouseLeave={onLeave}
       style={{ rotateX: srx, rotateY: sry, transformPerspective: 900 }}
-      className={cx("rounded-2xl glass shadow-xl chrome widget-shadow", className)}>
+      className={cx("rounded-2xl glass shadow-xl chrome transition-shadow hover:shadow-[0_18px_50px_rgba(0,0,0,.55)]", className)}>
       {children}
     </motion.div>
   );
@@ -1832,7 +1808,7 @@ const tzTime = (tz: string) => new Date().toLocaleTimeString("en-US", { hour: "2
 function ClockWidget() {
   const [t, setT] = useState(new Date());
   useEffect(() => { const i = setInterval(() => setT(new Date()), 1000); return () => clearInterval(i); }, []);
-  const hh = String(t.getHours()).padStart(2, "0"), mm = String(t.getMinutes()).padStart(2, "0");
+  const hh = String(t.getHours()).padStart(2, "0"), mm = String(t.getSeconds() % 2 === 0 ? t.getMinutes() : t.getMinutes()).padStart(2, "0");
   const cities: [string, string][] = [["Seoul · HQ", "Asia/Seoul"], ["Kigali", "Africa/Kigali"], ["Accra", "Africa/Accra"], ["Bogotá", "America/Bogota"]];
   return (
     <Tilt className="p-4">
@@ -1879,7 +1855,7 @@ function WeatherWidget() {
   const drops = useMemo(() => Array.from({ length: 14 }, (_, i) => ({ left: (i * 7.3 + 4) % 96, delay: (i * 0.13) % 1.1 })), []);
   const flakes = useMemo(() => Array.from({ length: 12 }, (_, i) => ({ left: (i * 8.1 + 3) % 96, delay: (i * 0.5) % 6 })), []);
   const stars = useMemo(() => Array.from({ length: 16 }, (_, i) => ({ left: (i * 6.7 + 2) % 96, top: (i * 11.3) % 55, delay: (i * 0.3) % 2.6 })), []);
-  const hours = [0, 1, 2, 3, 4].map((i) => ({ h: (hour + i + 1) % 24, t: base + Math.round(Math.sin(i + hour) * 2) - Math.floor(i * 0.4) }));
+  const hours = [0, 1, 2, 3, 4].map((i) => ({ h: (hour + i + 1) % 24, t: base + Math.round(Math.sin(i + hour) * 2) - i * 0.4 | 0 }));
   return (
     <Tilt className="overflow-hidden">
       <div className="relative h-[168px]" style={{ background: isDay ? skyDay[cond] : skyNight[cond] }}>
@@ -1938,9 +1914,9 @@ const Spark = ({ data, color }: { data: number[]; color: string }) => {
 };
 function SystemWidget() {
   const os = useOS();
-  const [cpu, setCpu] = useState<number[]>(() => Array.from({ length: 24 }, () => 30 + Math.random() * 20));
-  const [ram, setRam] = useState<number[]>(() => Array.from({ length: 24 }, () => 55 + Math.random() * 10));
-  const [net, setNet] = useState<number[]>(() => Array.from({ length: 24 }, () => 10 + Math.random() * 30));
+  const [cpu, setCpu] = useState<number[]>(Array.from({ length: 24 }, () => 30 + Math.random() * 20));
+  const [ram, setRam] = useState<number[]>(Array.from({ length: 24 }, () => 55 + Math.random() * 10));
+  const [net, setNet] = useState<number[]>(Array.from({ length: 24 }, () => 10 + Math.random() * 30));
   const [up, setUp] = useState(0);
   useEffect(() => {
     const t = setInterval(() => {
@@ -2049,213 +2025,85 @@ function CalendarMiniWidget() {
     </Tilt>
   );
 }
-
-/* Persistent draggable widget wrapper */
-const WIDGET_KEY = "weko.widgets.v16";
-interface WidgetPos { x: number; y: number }
-function loadPositions(key: string): Record<string, WidgetPos> {
-  if (typeof window === "undefined") return {};
-  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : {}; } catch { return {}; }
-}
-function savePosition(key: string, id: string, pos: WidgetPos) {
-  try { const all = loadPositions(key); all[id] = pos; localStorage.setItem(key, JSON.stringify(all)); } catch {}
-}
-function DraggableWidget({ id, children, defaultPos }: { id: string; children: React.ReactNode; defaultPos: WidgetPos }) {
-  const initial = useMemo(() => loadPositions(WIDGET_KEY)[id] ?? defaultPos, [id, defaultPos]);
-  const x = useMotionValue(initial.x); const y = useMotionValue(initial.y);
-  const [dragging, setDragging] = useState(false);
-  const [ready, setReady] = useState(false);
-  useEffect(() => { setReady(true); }, []);
-  return (
-    <motion.div
-      drag dragMomentum={false} dragElastic={0.06}
-      onDragStart={() => setDragging(true)}
-      onDragEnd={() => { setDragging(false); savePosition(WIDGET_KEY, id, { x: x.get(), y: y.get() }); }}
-      style={{ x, y, position: "absolute", left: 0, top: 0, zIndex: dragging ? 9000 : 10, opacity: ready ? 1 : 0 }}
-      whileDrag={{ scale: 1.04 }}
-      initial={{ opacity: 0, scale: 0.9, y: initial.y + 20 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={SPRING_SOFT}
-      className={cx("drag-host chrome w-[280px] cursor-grab active:cursor-grabbing touch-none select-none", dragging && "is-dragging")}
-    >
-      <div className="drag-handle" title="Drag to move">
-        <L.GripVertical className="size-3 text-white/90" />
-      </div>
-      {children}
-    </motion.div>
-  );
-}
-
-/* Wall-clock defaults that stagger the widgets */
-const WIDGET_DEFAULTS: { id: string; node: React.ReactNode; pos: WidgetPos }[] = [
-  { id: "clock", pos: { x: 20, y: 56 } },
-  { id: "weather", pos: { x: 20, y: 236 } },
-  { id: "system", pos: { x: 20, y: 470 } },
-  { id: "stacks", pos: { x: 20, y: 690 } },
-  { id: "hub", pos: { x: 20, y: 790 } },
-  { id: "calendar", pos: { x: 20, y: 870 } },
-].map((d, i) => ({
-  ...d,
-  node: [<ClockWidget key="c" />, <WeatherWidget key="w" />, <SystemWidget key="s" />, <StacksWidget key="f" />, <HubTickerWidget key="h" />, <CalendarMiniWidget key="k" />][i],
-}));
-
 function DesktopWidgets() {
   return (
-    <div className="pointer-events-none absolute inset-0 z-[700]">
-      {WIDGET_DEFAULTS.map((w, i) => (
-        <div key={w.id} className="pointer-events-auto">
-          <DraggableWidget id={w.id} defaultPos={w.pos}>{w.node}</DraggableWidget>
-        </div>
-      ))}
+    <div className="widget-scroll pointer-events-auto absolute left-4 top-10 z-[700] hidden w-[280px] flex-col gap-3 overflow-y-auto pb-24 lg:flex" style={{ maxHeight: "calc(100vh - 120px)" }}>
+      {[<ClockWidget key="c" />, <WeatherWidget key="w" />, <SystemWidget key="s" />, <StacksWidget key="f" />, <HubTickerWidget key="h" />, <CalendarMiniWidget key="k" />].map((W, i) => (
+        <motion.div key={i} initial={{ opacity: 0, x: -30, scale: 0.94 }} animate={{ opacity: 1, x: 0, scale: 1 }} transition={{ ...SPRING_SOFT, delay: 0.35 + i * 0.09 }}>
+          {W}
+        </motion.div>))}
     </div>
   );
 }
 
-/* ── 25. DRAGGABLE DESKTOP ICONS ─────────────────────────────────────────── */
-const ICON_KEY = "weko.icons.v16";
-interface IconDef { id: string; label: string; sub: string; node: React.ReactNode; run: (os: OSApi) => void; defaultPos: (w: number) => WidgetPos }
-const DESKTOP_ICON_DEFS: IconDef[] = [
-  { id: "hub", label: "KOICA Hub", sub: "Case workspace",
-    node: <div className="relative"><div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-amber-400/40 to-orange-600/50 blur-lg" /><img src="/koicahub.webp" alt="" className="relative size-[56px] object-contain drop-shadow-[0_10px_22px_rgba(0,0,0,.6)]" /></div>,
-    run: (os) => os.open("hub"), defaultPos: (w) => ({ x: w - 130, y: 56 }) },
-  { id: "finder", label: "Finder", sub: "Files",
-    node: <img src="/finder.webp" alt="" className="size-[56px] object-contain drop-shadow-[0_10px_22px_rgba(0,0,0,.6)]" />,
-    run: (os) => os.open("finder"), defaultPos: (w) => ({ x: w - 130, y: 176 }) },
-  { id: "docs", label: "Documents", sub: "PDFs & reports",
-    node: <div className="relative"><img src="/folderog.webp" alt="" className="size-[56px] object-contain drop-shadow-[0_10px_22px_rgba(0,0,0,.6)]" /><div className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-md bg-red-500 ring-2 ring-white/40 shadow-lg"><span className="text-[7px] font-black text-white">PDF</span></div></div>,
-    run: (os) => os.open("finder", { path: "~/Documents" }), defaultPos: (w) => ({ x: w - 130, y: 296 }) },
-  { id: "pics", label: "Pictures", sub: "Field gallery",
-    node: <div className="relative"><img src="/folderog.webp" alt="" className="size-[56px] object-contain drop-shadow-[0_10px_22px_rgba(0,0,0,.6)]" /><div className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-md bg-amber-500 ring-2 ring-white/40 shadow-lg"><L.ImageIcon className="size-3 text-white" /></div></div>,
-    run: (os) => os.open("finder", { path: "~/Pictures" }), defaultPos: (w) => ({ x: w - 130, y: 416 }) },
-  { id: "projects", label: "Projects", sub: "Case files",
-    node: <div className="relative"><img src="/folderog.webp" alt="" className="size-[56px] object-contain drop-shadow-[0_10px_22px_rgba(0,0,0,.6)]" /><div className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-md bg-orange-500 ring-2 ring-white/40 shadow-lg"><L.Network className="size-3 text-white" /></div></div>,
-    run: (os) => os.open("finder", { path: "~/projects" }), defaultPos: (w) => ({ x: w - 130, y: 536 }) },
-  { id: "video", label: "KOICA Video", sub: "Play promo",
-    node: <div className="relative grid size-[56px] place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-700 ring-1 ring-white/30 shadow-[0_10px_30px_rgba(217,70,239,.5)]"><L.Clapperboard className="size-7 text-white" /><div className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full bg-white shadow-lg ring-2 ring-white/40"><L.Play className="size-3 text-purple-700 ml-0.5" fill="currentColor" /></div></div>,
-    run: (os) => os.open("media"), defaultPos: (w) => ({ x: w - 130, y: 656 }) },
-];
-function DraggableDesktopIcon({ def }: { def: IconDef }) {
-  const os = useOS();
-  const [winW, setWinW] = useState(typeof window !== "undefined" ? window.innerWidth : 1440);
-  useEffect(() => {
-    const onR = () => setWinW(window.innerWidth);
-    window.addEventListener("resize", onR);
-    return () => window.removeEventListener("resize", onR);
-  }, []);
-  const initial = useMemo(() => loadPositions(ICON_KEY)[def.id] ?? def.defaultPos(winW), [def.id, winW]);
-  const x = useMotionValue(initial.x); const y = useMotionValue(initial.y);
-  const [dragging, setDragging] = useState(false);
-  useEffect(() => {
-    const stored = loadPositions(ICON_KEY)[def.id];
-    if (!stored) { x.set(def.defaultPos(winW).x); }
-  }, [winW, def, x]);
-  return (
-    <motion.div
-      drag dragMomentum={false} dragElastic={0.06}
-      onDragStart={() => setDragging(true)}
-      onDragEnd={() => { setDragging(false); savePosition(ICON_KEY, def.id, { x: x.get(), y: y.get() }); }}
-      style={{ x, y, position: "absolute", left: 0, top: 0, zIndex: dragging ? 9000 : 5 }}
-      whileHover={{ scale: 1.08 }}
-      whileTap={{ scale: 0.94 }}
-      whileDrag={{ scale: 1.1, rotate: -2 }}
-      onDoubleClick={() => def.run(os)}
-      onClick={() => def.run(os)}
-      className={cx("chrome flex w-[100px] cursor-grab active:cursor-grabbing flex-col items-center gap-1.5 rounded-xl p-2 hover:bg-white/10 touch-none select-none", dragging && "bg-white/15 backdrop-blur-xl shadow-2xl ring-1 ring-white/20")}
-    >
-      {def.node}
-      <p className="text-[11px] font-semibold text-white leading-tight text-center" style={{ textShadow: "0 1px 3px rgba(0,0,0,.95)" }}>{def.label}</p>
-    </motion.div>
-  );
-}
-function DesktopIcons() {
-  return (
-    <div className="pointer-events-none absolute inset-0 z-[15]">
-      {DESKTOP_ICON_DEFS.map((d) => (
-        <div key={d.id} className="pointer-events-auto">
-          <DraggableDesktopIcon def={d} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── 26. iOS SHELL (iPhone+ · Reorder icons) ─────────────────────────────── */
-const IOS_DEFAULT_ORDER: AppId[] = ["hub", "terminal", "atlas", "timeline", "programs", "media", "photos", "messages", "safari", "notes", "calculator", "calendar", "settings", "monitor", "music", "story"];
-const IOS_ORDER_KEY = "weko.ios.order.v16";
+/* ── 25. iOS / WATCH SHELLS ──────────────────────────────────────────────────── */
 function IOSShell({ openApp }: { openApp: (a: AppId, p?: any) => void }) {
   const os = useOS(); const [t, setT] = useState(new Date());
-  const [jiggle, setJiggle] = useState(false);
-  const [order, setOrder] = useState<AppId[]>(() => {
-    if (typeof window === "undefined") return IOS_DEFAULT_ORDER;
-    try { const raw = localStorage.getItem(IOS_ORDER_KEY); if (raw) { const parsed = JSON.parse(raw); if (Array.isArray(parsed) && parsed.length) return parsed; } } catch {}
-    return IOS_DEFAULT_ORDER;
-  });
   useEffect(() => { const i = setInterval(() => setT(new Date()), 1000); return () => clearInterval(i); }, []);
-  useEffect(() => { try { localStorage.setItem(IOS_ORDER_KEY, JSON.stringify(order)); } catch {} }, [order]);
+  const homeApps: AppId[] = ["hub", "terminal", "atlas", "timeline", "programs", "media", "photos", "messages", "safari", "notes", "calculator", "calendar", "settings", "monitor", "music", "story"];
   const dockApps: AppId[] = ["finder", "safari", "terminal", "messages"];
-  const wp = WALLPAPERS[os.wallpaper];
   return (
-    <div className="fixed inset-0 overflow-hidden" style={{ background: wp.css }}>
-      {wp.img && <img src={wp.img} alt="" className="absolute inset-0 h-full w-full object-cover kenburns" />}
-      <div className="absolute inset-0" style={{ background: wp.css, mixBlendMode: "multiply" }} />
-      <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
-      {/* Status bar */}
+    <div className="fixed inset-0 overflow-hidden" style={{ background: WALLPAPERS[os.wallpaper].css }}>
+      {WALLPAPERS[os.wallpaper].img && <img src={WALLPAPERS[os.wallpaper].img} alt="" className="absolute inset-0 h-full w-full object-cover kenburns" />}
+      <div className="absolute inset-0 bg-black/15 backdrop-blur-2xl" />
       <div className="chrome relative z-10 flex items-center justify-between px-6 pt-3 text-[13px] font-semibold text-white">
         <span>{t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false })}</span>
         <div className="flex items-center gap-1"><L.Signal className="size-3.5" /><L.Wifi className="size-3.5" /><L.BatteryFull className="size-4" /></div>
       </div>
-      {/* Dynamic Island */}
       <div className="relative z-10 mx-auto mt-1 h-7 w-28 rounded-full bg-black shadow-inner" />
-      {/* Reorder grid */}
-      <Reorder.Group
-        axis="y"
-        values={order}
-        onReorder={setOrder}
-        className="relative z-10 mt-6 grid grid-cols-4 gap-x-3 gap-y-5 px-4 chrome overflow-y-auto pb-40"
-        style={{ listStyle: "none", padding: 0, margin: 0 }}
-      >
-        {order.map((id, i) => (
-          <Reorder.Item
-            key={id}
-            value={id}
-            onDragStart={() => setJiggle(true)}
-            onDragEnd={() => setJiggle(false)}
-            whileDrag={{ scale: 1.15, zIndex: 100 }}
-            transition={ELASTIC_ICON}
-            style={{ listStyle: "none" }}
-            className="flex flex-col items-center gap-1"
-          >
-            <motion.button
-              initial={{ opacity: 0, scale: 0.4, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ ...ELASTIC_ICON, delay: i * 0.03 }}
-              whileTap={{ scale: 0.82 }}
-              onContextMenu={(e) => { e.preventDefault(); setJiggle((j) => !j); }}
-              onClick={() => { if (!jiggle) openApp(id); }}
-              className={cx("flex flex-col items-center gap-1", jiggle && "ios-jiggle")}
-            >
-              <div className="size-14 grid place-items-center pointer-events-none">{React.createElement(APPS[id].Icon)}</div>
-              <span className="text-[10.5px] text-white font-medium drop-shadow-md truncate max-w-[70px] pointer-events-none">{APPS[id].name}</span>
-            </motion.button>
-          </Reorder.Item>
-        ))}
-      </Reorder.Group>
-      {/* Dock */}
-      <div className="absolute inset-x-3 bottom-3 z-20 rounded-[28px] ios-dock p-2 chrome">
-        <div className="grid grid-cols-4 gap-2">
-          {dockApps.map((id) => (
-            <motion.button key={id} whileTap={{ scale: 0.82 }} onClick={() => openApp(id)} className="grid size-14 place-items-center mx-auto">{React.createElement(APPS[id].Icon)}</motion.button>))}
+      <div className="relative z-10 mt-6 grid grid-cols-4 gap-x-3 gap-y-5 px-4 chrome overflow-y-auto pb-32">
+        {homeApps.map((id, i) => (
+          <motion.button key={id} initial={{ opacity: 0, scale: 0.4, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ ...ELASTIC_ICON, delay: i * 0.03 }} whileTap={{ scale: 0.82 }}
+            onClick={() => openApp(id)} className="flex flex-col items-center gap-1">
+            <div className="size-14 grid place-items-center">{React.createElement(APPS[id].Icon)}</div>
+            <span className="text-[10.5px] text-white font-medium drop-shadow-md truncate max-w-[70px]">{APPS[id].name}</span>
+          </motion.button>))}
+      </div>
+      <div className="absolute inset-x-3 bottom-3 z-10 rounded-[28px] bg-white/15 backdrop-blur-2xl border border-white/20 p-2 chrome">
+        <div className="grid grid-cols-4 gap-2">{dockApps.map((id) => (
+          <motion.button key={id} whileTap={{ scale: 0.82 }} onClick={() => openApp(id)} className="grid size-14 place-items-center mx-auto">{React.createElement(APPS[id].Icon)}</motion.button>))}</div>
+      </div>
+      <div className="absolute inset-x-0 bottom-0.5 z-10 flex justify-center"><div className="h-1 w-32 rounded-full bg-white/70" /></div>
+    </div>);
+}
+function WatchShell({ openApp }: { openApp: (a: AppId, p?: any) => void }) {
+  const [t, setT] = useState(new Date()); const [view, setView] = useState<"face" | "grid">("face");
+  useEffect(() => { const i = setInterval(() => setT(new Date()), 1000); return () => clearInterval(i); }, []);
+  const apps: AppId[] = ["hub", "terminal", "atlas", "timeline", "programs", "media", "messages", "settings"];
+  return (
+    <div className="fixed inset-0 overflow-hidden bg-black flex items-center justify-center">
+      <div className="relative w-[240px] h-[290px] rounded-[52px] bg-gradient-to-br from-zinc-700 via-zinc-800 to-zinc-900 p-[10px] shadow-[0_20px_60px_rgba(0,0,0,.9)]">
+        <div className="absolute -right-[6px] top-[70px] w-[10px] h-[54px] rounded-r-lg bg-gradient-to-b from-orange-500 to-orange-700 shadow-lg" onClick={() => setView(view === "face" ? "grid" : "face")} />
+        <div className="absolute -right-[4px] top-[150px] w-[8px] h-[34px] rounded-r-md bg-zinc-600" />
+        <div className="w-full h-full rounded-[42px] bg-black overflow-hidden relative">
+          <div className="chrome absolute top-2 inset-x-0 flex justify-between px-4 text-[9px] text-zinc-400 z-20">
+            <span className="text-amber-400 font-mono">{t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false })}</span>
+            <span className="flex items-center gap-1"><span className="w-1 h-1 rounded-full bg-red-500" />94%</span>
+          </div>
+          {view === "face" ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col items-center justify-center px-3">
+              <div className="relative w-32 h-32 rounded-full border border-zinc-800 flex items-center justify-center">
+                <div className="absolute inset-2 rounded-full border border-dashed border-zinc-800" />
+                <div className="text-center"><p className="text-[34px] font-extrabold text-white leading-none tabular-nums">{t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false })}</p>
+                  <p className="text-[8px] text-orange-400 uppercase tracking-widest mt-1">KOICA ∞</p></div>
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-1.5 w-full">
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => openApp("hub")} className="rounded-xl bg-amber-500/15 border border-amber-500/30 p-1.5 text-center"><p className="text-[8px] text-amber-300 font-bold">₩1.53T</p><p className="text-[6px] text-zinc-500">budget</p></motion.button>
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => openApp("atlas")} className="rounded-xl bg-sky-500/15 border border-sky-500/30 p-1.5 text-center"><p className="text-[8px] text-sky-300 font-bold">49</p><p className="text-[6px] text-zinc-500">offices</p></motion.button>
+                <motion.button whileTap={{ scale: 0.9 }} onClick={() => openApp("timeline")} className="rounded-xl bg-emerald-500/15 border border-emerald-500/30 p-1.5 text-center"><p className="text-[8px] text-emerald-300 font-bold">35y</p><p className="text-[6px] text-zinc-500">since '91</p></motion.button>
+              </div>
+            </motion.div>) : (
+            <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="h-full grid grid-cols-3 gap-2 content-center px-4 pt-4">
+              {apps.map((id, i) => (
+                <motion.button key={id} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ ...ELASTIC_ICON, delay: i * 0.04 }} whileTap={{ scale: 0.8 }}
+                  onClick={() => openApp(id)} className="aspect-square rounded-full overflow-hidden ring-1 ring-white/20">{React.createElement(APPS[id].Icon)}</motion.button>))}
+            </motion.div>)}
         </div>
       </div>
-      <div className="absolute inset-x-0 bottom-0.5 z-20 flex justify-center"><div className="h-1 w-32 rounded-full bg-white/70" /></div>
-      {/* Hint */}
-      <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2 }}
-        className="pointer-events-none absolute top-[100px] inset-x-0 z-10 text-center text-[10px] text-white/55 tracking-wider">long-press icon · drag to reorder</motion.p>
-    </div>
-  );
+    </div>);
 }
 
-/* ── 27. ROOT ────────────────────────────────────────────────────────────── */
+/* ── 26. ROOT ────────────────────────────────────────────────────────────────── */
 let WIN_SEQ = 1;
 export default function Page() {
   const [booted, setBooted] = useState(false); const [sleeping, setSleeping] = useState(false); const [locked, setLocked] = useState(false);
@@ -2264,7 +2112,7 @@ export default function Page() {
   const [wins, setWins] = useState<Win[]>([]); const [focusedId, setFocusedId] = useState<number | null>(null);
   const [notices, setNotices] = useState<any[]>([]); const [ctx, setCtx] = useState<{ x: number; y: number } | null>(null);
   const [missionControl, setMissionControl] = useState(false);
-  const { bp } = useBreakpoint(); const isIOS = bp === "mobile";
+  const { bp } = useBreakpoint(); const isWatch = bp === "watch"; const isIOS = bp === "mobile";
   const notify = useCallback((t: string, b: string, icon?: React.ReactNode) => { const id = Date.now() + Math.random(); setNotices((n) => [...n, { id, t, b, icon }]); setTimeout(() => setNotices((n) => n.filter((x) => x.id !== id)), 4200); }, []);
   const focus = useCallback((id: number) => { setWins((ws) => { const top = Math.max(...ws.map((w) => w.z), 10); return ws.map((w) => (w.id === id ? { ...w, z: top + 1 } : w)); }); setFocusedId(id); }, []);
   const open = useCallback((app: AppId, props?: any) => {
@@ -2298,14 +2146,11 @@ export default function Page() {
   }, [focusedId, close, minimize, open]);
   const api: OSApi = { dark, setDark, wallpaper, setWallpaper, open, close, minimize, restore, toggleMax, snapWindow, focus, commit, notify, sleep: () => setSleeping(true), lock: () => setLocked(true), restart: () => { setWins([]); setBooted(false); }, focusedApp: wins.find((w) => w.id === focusedId)?.app ?? null, focusedId, wins, notices, volume, setVolume, brightness, setBrightness, missionControl, setMissionControl };
   const wp = WALLPAPERS[wallpaper];
-
-  /* ── iPhone shell (mobile) ────────────────────────────────────────── */
-  if (booted && isIOS) {
+  if (booted && (isWatch || isIOS)) {
     return (
       <OS.Provider value={api}>
         <style>{GLOBAL_CSS}</style>
-        {!booted && <BootScreen onDone={() => setBooted(true)} />}
-        <IOSShell openApp={open} />
+        {isWatch ? <WatchShell openApp={open} /> : <IOSShell openApp={open} />}
         <AnimatePresence>{wins.map((w) => (
           <motion.div key={w.id} initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }} transition={SPRING_POP} className="fixed inset-0 z-[2000] flex flex-col bg-zinc-950">
             <div className="chrome flex items-center justify-between px-4 py-2 bg-zinc-900/95 backdrop-blur-xl border-b border-white/5">
@@ -2319,8 +2164,6 @@ export default function Page() {
         <Notifications notices={notices} />
       </OS.Provider>);
   }
-
-  /* ── Desktop shell (tablet+) ──────────────────────────────────────── */
   return (
     <OS.Provider value={api}>
       <style>{GLOBAL_CSS}</style>
@@ -2335,20 +2178,20 @@ export default function Page() {
         </AnimatePresence>
         {!wp.img && <motion.div key={"g" + wallpaper} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9 }} className="grad-animate absolute inset-0" style={{ background: wp.css }} />}
         <div className="pointer-events-none absolute inset-0 z-[9990] bg-black transition-opacity" style={{ opacity: (100 - brightness) / 130 }} />
+        <div className="notch hidden sm:flex"><div className="w-2 h-2 rounded-full bg-zinc-800" /><span className="text-[10px] text-zinc-500 font-mono">WeKO ∞</span></div>
         <AnimatePresence>{!booted && <BootScreen key="boot" onDone={() => setBooted(true)} />}</AnimatePresence>
         {booted && (<>
           <MenuBar openSpotlight={() => setSpot(true)} openApp={open} />
-          {/* Stage */}
+          {/* clean Stage — pins removed; WidgetKit column provides essentials */}
           <div className="absolute inset-x-0 bottom-0 top-8" onContextMenu={(e) => { e.preventDefault(); if (e.altKey) { setMissionControl(true); return; } setCtx({ x: e.clientX, y: e.clientY }); }} />
           <DesktopWidgets />
-          <DesktopIcons />
           <AnimatePresence>{wins.map((w) => <WindowFrame key={w.id} win={w} />)}</AnimatePresence>
           <Dock /><Notifications notices={notices} />
           <AnimatePresence>{ctx && (
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={SPRING_POP}
               className="chrome absolute z-[940] w-56 rounded-lg border border-white/10 bg-zinc-800/95 p-1 shadow-2xl backdrop-blur-2xl"
               style={{ left: Math.min(ctx.x, window.innerWidth - 240), top: Math.min(ctx.y, window.innerHeight - 220) }}>
-              {[{ l: "Change Wallpaper", r: () => setWallpaper((w) => (w + 1) % WALLPAPERS.length) }, { l: "Toggle Dark Mode", r: () => setDark(!dark) }, { l: "Open KOICA Hub", r: () => open("hub") }, { l: "Open koica.pdf", r: () => open("pdf", { src: "/koica.pdf", title: "koica.pdf" }) }, { l: "Open Terminal", r: () => open("terminal") }, { l: "Reset Layout", r: () => { try { localStorage.removeItem("weko.widgets.v16"); localStorage.removeItem("weko.icons.v16"); localStorage.removeItem("weko.ios.order.v16"); } catch {} location.reload(); } }, { l: "Mission Control", r: () => setMissionControl(true) }].map((it) => (
+              {[{ l: "Change Wallpaper", r: () => setWallpaper((w) => (w + 1) % WALLPAPERS.length) }, { l: "Toggle Dark Mode", r: () => setDark(!dark) }, { l: "Open KOICA Hub", r: () => open("hub") }, { l: "Open koica.pdf", r: () => open("pdf", { src: "/koica.pdf", title: "koica.pdf" }) }, { l: "Open Terminal", r: () => open("terminal") }, { l: "Mission Control", r: () => setMissionControl(true) }].map((it) => (
                 <button key={it.l} onClick={() => { it.r(); setCtx(null); }} className="block w-full rounded-md px-3 py-1.5 text-left text-[13px] text-zinc-100 hover:bg-sky-600">{it.l}</button>))}
             </motion.div>)}
           </AnimatePresence>
@@ -2357,7 +2200,7 @@ export default function Page() {
           <AnimatePresence>{missionControl && <MissionControl key="mc" />}</AnimatePresence>
           <AnimatePresence>{sleeping && <motion.div key="sl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[9998] cursor-pointer bg-black" onClick={() => setSleeping(false)} />}</AnimatePresence>
           <AnimatePresence>{locked && <LockScreen key="lk" unlock={() => setLocked(false)} />}</AnimatePresence>
-          <p className="chrome pointer-events-none absolute bottom-1 left-3 z-[700] text-[10px] text-white/40 hidden sm:block">macOS Sequoia · KOICA Infinite Premium v16 · drag anything anywhere · right-click for menu</p>
+          <p className="chrome pointer-events-none absolute bottom-1 left-3 z-[700] text-[10px] text-white/40 hidden sm:block">macOS Sequoia · KOICA Infinite Premium · Natural Earth geography · public information</p>
         </>)}
       </div>
     </OS.Provider>);
